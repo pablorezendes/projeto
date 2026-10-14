@@ -14,6 +14,8 @@ bash scripts/deploy.sh
 
 Se houver mais de um Traefik, rede ou resolvedor possível, o script interrompe antes de alterar o site e informa qual campo está ambíguo. Use os nomes exatos da infraestrutura existente:
 
+Para certificados, o detector prioriza o resolvedor configurado no entrypoint HTTPS e os nomes declarados nos argumentos ou no ambiente do Traefik ativo. Referências antigas nas labels das aplicações não acrescentam nomes candidatos. Se a configuração do Traefik estiver em arquivo, consulte esse arquivo e informe `--resolver NOME_EXATO`; o detector não presume que uma label corresponde a um resolvedor existente.
+
 ```bash
 python3 scripts/configure-traefik.py --container NOME_DO_TRAEFIK --network REDE_EXISTENTE --http ENTRYPOINT_HTTP --https ENTRYPOINT_HTTPS --resolver CERTRESOLVER
 bash scripts/deploy.sh

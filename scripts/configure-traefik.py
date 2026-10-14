@@ -41,7 +41,7 @@ def networks(container: dict) -> set[str]:
     return set(container.get("NetworkSettings", {}).get("Networks") or {}) - {"bridge", "host", "none"}
 
 
-def static_flags(container: dict) -> dict[str, str]:
+def raw_static_flags(container: dict) -> dict[str, str]:
     config = container.get("Config", {})
     arguments = [*(config.get("Cmd") or []), *(container.get("Args") or [])]
     result: dict[str, str] = {}
@@ -52,8 +52,51 @@ def static_flags(container: dict) -> dict[str, str]:
         if not separator:
             following = arguments[index + 1] if index + 1 < len(arguments) else ""
             value = following if isinstance(following, str) and not following.startswith("--") else "true"
-        result[key.lower()] = value
+        result[key] = value
     return result
+
+
+def static_flags(container: dict) -> dict[str, str]:
+    return {key.lower(): value for key, value in raw_static_flags(container).items()}
+
+
+def certificate_resolvers(proxy: dict, https: str, references: set[str]) -> set[str]:
+    # Environment decoding follows Traefik's parser: lowercase and '_' -> '.'.
+    environment = {}
+    for entry in proxy.get("Config", {}).get("Env") or []:
+        key, separator, value = entry.partition("=")
+        if separator and key.upper().startswith("TRAEFIK_"):
+            environment[key[8:].lower().replace("_", ".")] = value
+    raw_flags = raw_static_flags(proxy)
+    declared = set()
+    for key in [*raw_flags, *environment]:
+        match = re.match(r"^certificatesresolvers\.([^.]+)\.acme(?:\.|$)", key, re.IGNORECASE)
+        if match:
+            declared.add(match[1])
+
+    entrypoint_key = f"entrypoints.{https.lower()}.http.tls.certresolver"
+    flags = {key.lower(): value for key, value in raw_flags.items()}
+    entrypoint_resolver = flags.get(entrypoint_key, "") or environment.get(entrypoint_key, "")
+    if entrypoint_resolver:
+        if not SAFE_NAME.fullmatch(entrypoint_resolver):
+            raise ConfigurationError("Nome inválido no certresolver do entrypoint HTTPS do Traefik.")
+        if declared and entrypoint_resolver not in declared:
+            raise ConfigurationError(
+                "O certresolver do entrypoint HTTPS não corresponde a um resolvedor declarado "
+                "nos argumentos ou no ambiente do Traefik. Consulte a configuração existente "
+                "e informe --resolver NOME_EXATO."
+            )
+        return {entrypoint_resolver}
+
+    if declared:
+        # A stale application label cannot introduce an undeclared resolver.
+        return (references & declared) or declared
+    raise ConfigurationError(
+        "Não foi possível confirmar um certresolver declarado nos argumentos ou no ambiente "
+        "do Traefik selecionado. Se a configuração está em arquivo, consulte esse arquivo "
+        "e informe --resolver NOME_EXATO ao executar scripts/configure-traefik.py. "
+        "Labels das aplicações, sozinhas, não confirmam a existência do resolvedor."
+    )
 
 
 def routers(container: dict) -> list[dict[str, str]]:
@@ -197,19 +240,13 @@ def infer(containers: list[dict], values: dict[str, str], selected_container: st
     if http == https:
         raise ConfigurationError("Os entrypoints HTTP e HTTPS precisam ser distintos neste Compose.")
 
-    resolver_candidates = {
+    resolver_references = {
         router["tls.certresolver"] for router in secure_routers
         if router.get("tls.certresolver") and (not endpoints(router) or https in endpoints(router))
     }
-    if not resolver_candidates:
-        for key in flags:
-            match = re.match(r"^certificatesresolvers\.([^.]+)\.acme(?:\.|$)", key)
-            if match:
-                resolver_candidates.add(match[1])
-        # Also accept a resolver explicitly attached to the chosen entrypoint.
-        entrypoint_resolver = flags.get(f"entrypoints.{https.lower()}.http.tls.certresolver", "")
-        if entrypoint_resolver:
-            resolver_candidates = {entrypoint_resolver}
+    resolver_candidates = certificate_resolvers(proxy, https, resolver_references) if not values.get(
+        "TRAEFIK_CERTRESOLVER", ""
+    ) else set()
     resolver = choose("TRAEFIK_CERTRESOLVER", resolver_candidates, values.get("TRAEFIK_CERTRESOLVER", ""))
     return {
         "TRAEFIK_NETWORK": network,
