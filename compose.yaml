@@ -1,0 +1,51 @@
+name: projeto-apice
+
+services:
+  web:
+    image: ${APICE_IMAGE:-apice-investidores:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=101,gid=101
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.50
+    expose:
+      - "8080"
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${TRAEFIK_NETWORK:?Preencha TRAEFIK_NETWORK no .env com a rede externa existente}
+      traefik.http.routers.projeto-apice.rule: Host(`projeto.tescod.com`)
+      traefik.http.routers.projeto-apice.entrypoints: ${TRAEFIK_HTTPS_ENTRYPOINT:?Preencha TRAEFIK_HTTPS_ENTRYPOINT no .env}
+      traefik.http.routers.projeto-apice.tls: "true"
+      traefik.http.routers.projeto-apice.tls.certresolver: ${TRAEFIK_CERTRESOLVER:?Preencha TRAEFIK_CERTRESOLVER no .env}
+      traefik.http.routers.projeto-apice.service: projeto-apice
+      traefik.http.services.projeto-apice.loadbalancer.server.port: "8080"
+      traefik.http.services.projeto-apice.loadbalancer.healthcheck.path: /healthz
+      traefik.http.services.projeto-apice.loadbalancer.healthcheck.interval: 15s
+      traefik.http.services.projeto-apice.loadbalancer.healthcheck.timeout: 3s
+      traefik.http.routers.projeto-apice-http.rule: Host(`projeto.tescod.com`)
+      traefik.http.routers.projeto-apice-http.entrypoints: ${TRAEFIK_HTTP_ENTRYPOINT:?Preencha TRAEFIK_HTTP_ENTRYPOINT no .env}
+      traefik.http.routers.projeto-apice-http.middlewares: projeto-apice-https
+      traefik.http.routers.projeto-apice-http.service: projeto-apice
+      traefik.http.middlewares.projeto-apice-https.redirectscheme.scheme: https
+      traefik.http.middlewares.projeto-apice-https.redirectscheme.permanent: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:?Preencha TRAEFIK_NETWORK no .env com a rede externa existente}

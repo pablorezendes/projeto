@@ -1,0 +1,19 @@
+# Deny by default. Only these reviewed presentation files enter the build.
+**
+!Dockerfile
+!nginx.conf
+!public/
+!public/index.html
+!public/styles.css
+!public/app.js
+!public/assets/
+!public/assets/marfim-fechada.jpg
+!public/assets/marfim-aberta.jpg
+!public/assets/preto-exterior.jpg
+!public/assets/experiencia-interior.jpg
+!public/assets/vista-interior.jpg
+!public/assets/favicon.svg
+!public/modelo/
+!public/modelo/index.html
+!public/modelo/viewer.js
+!public/modelo/THIRD-PARTY-LICENSE.txt
