@@ -10,7 +10,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
  */
 export function createProduct(THREE, options = {}) {
   const group = new THREE.Group();
-  group.name = 'APICE — apresentação do produto';
+  group.name = 'AURION — apresentação do produto';
   const anisotropy = options.anisotropy || 4;
   const assetBase = options.assetBase || './';
   const v = (x,y,z) => new THREE.Vector3(x,y,z);

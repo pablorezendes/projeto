@@ -143,7 +143,7 @@ document.querySelectorAll('[data-finish]').forEach(button => button.addEventList
   product.setFinish(ivory ? 'marfim' : 'preto');
   document.querySelectorAll('[data-finish]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
   document.querySelector('#status').textContent = `Acabamento ${ivory ? 'marfim' : 'preto'}`;
-  host.setAttribute('aria-label', `Modelo 3D do ÁPICE em ${ivory ? 'marfim' : 'preto'}, com símbolos ciano neon, portas articuladas e uma pessoa reclinada na poltrona. Arraste para girar e use os controles para explorar.`);
+  host.setAttribute('aria-label', `Modelo 3D do AURION em ${ivory ? 'marfim' : 'preto'}, com símbolos ciano neon, portas articuladas e uma pessoa reclinada na poltrona. Arraste para girar e use os controles para explorar.`);
 }));
 doorsButton.addEventListener('click', () => {
   doorTarget = doorTarget ? 0 : 1;

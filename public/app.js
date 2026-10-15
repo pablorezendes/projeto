@@ -44,7 +44,7 @@
     const item = gallery[galleryIndex];
     lightboxImage.src = item.src;
     lightboxImage.alt = item.alt;
-    lightboxCaption.textContent = item.caption + ' · Visualização do conceito ÁPICE P1';
+    lightboxCaption.textContent = item.caption + ' · Visualização do conceito AURION P1';
     lightboxCount.textContent = String(galleryIndex + 1).padStart(2, '0') + ' / ' + String(gallery.length).padStart(2, '0');
   }
 

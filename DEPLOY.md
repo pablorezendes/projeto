@@ -1,6 +1,6 @@
 # Implantação da apresentação
 
-O repositório contém a apresentação comercial do ÁPICE e a infraestrutura do site. Desenhos de fabricação, arquivos de corte, listas de peças e instruções de montagem não fazem parte desta distribuição.
+O repositório contém a apresentação comercial do AURION e a infraestrutura do site. Desenhos de fabricação, arquivos de corte, listas de peças e instruções de montagem não fazem parte desta distribuição.
 
 ## Servidor Docker com Traefik existente
 
