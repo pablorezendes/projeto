@@ -21,8 +21,8 @@
 !/public/app.js
 !/public/assets/
 /public/assets/*
-!/public/assets/marfim-fechada.jpg
-!/public/assets/marfim-aberta.jpg
+!/public/assets/marfim-fechada-ciano.jpg
+!/public/assets/marfim-aberta-ciano.jpg
 !/public/assets/preto-exterior.jpg
 !/public/assets/experiencia-interior.jpg
 !/public/assets/vista-interior.jpg
