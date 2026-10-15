@@ -1,0 +1,45 @@
+PESSOA ADULTA RECLINADA — VISUAL HUMAN FIGURE
+
+pessoa-reclinada.glb contains modified MakeHuman asset data, not the MakeHuman
+application or its source code. MakeHuman explicitly dedicated these bundled
+assets to Creative Commons CC0 1.0 Universal in September 2020.
+
+Original asset copyright holders at dedication:
+Data Collection AB; Joel Palmius; Jonas Hauquier.
+Original anatomical target: Manuel Bastioni (copyright transferred in 2016).
+
+Source mesh:
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/3dobjs/base.obj
+Adult male anatomical target:
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/targets/macrodetails/caucasian-male-young.target
+Closed eyelid anatomical expressions (CC0 in each original file header):
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/targets/expression/units/caucasian/eye-left-closure.target
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/targets/expression/units/caucasian/eye-right-closure.target
+Rig and vertex weights (both declared CC0 in their metadata):
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/rigs/default.mhskel
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/rigs/default_weights.mhw
+
+Primary license explanation:
+https://github.com/makehumancommunity/makehuman/blob/master/LICENSE.md
+Full original asset dedication:
+https://github.com/makehumancommunity/makehuman/blob/master/LICENSE.ASSETS.md
+Canonical CC0 1.0 text:
+https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+Photographic skin diffuse and normal textures:
+"mindfront_aksel_skin" / Aksel Skin, by Mindfront, CC0 1.0.
+Distributed in the official MakeHuman natural male skins02 CC0 asset pack:
+https://static.makehumancommunity.org/assets/assetpacks/skins02.html
+https://files.makehumancommunity.org/asset_packs/skins02/skins02_cc0.zip
+The official pack's individual asset table identifies Mindfront as author and
+CC0 as the license. Only Aksel_Skin_diffuse.png and Aksel_Skin_NRM.png are used.
+For web delivery, the original 2048px diffuse is JPEG encoded at quality 93,
+and the normal map is downsampled to 1024px PNG. Both are embedded in the GLB.
+
+Modifications for this visualization: adult male morph; baked reclining pose;
+removed helper objects; visual clothing and scalp; original anatomical skin UVs,
+photographic skin maps and glTF packaging.
+No likeness of a specific real person is asserted. This is a digital adult
+figure for a conceptual product presentation. Modifications to this human asset
+are also made available under CC0 1.0. The ÁPICE product design and website keep
+their own copyright notice and are not covered by this asset dedication.

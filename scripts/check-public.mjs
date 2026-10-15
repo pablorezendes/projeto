@@ -18,8 +18,16 @@ async function walk(directory){
 }
 await walk(publicRoot);
 for(const filename of files){
-  const legalNotice=path.relative(publicRoot,filename).split(path.sep).join('/')==='modelo/THIRD-PARTY-LICENSE.txt';
-  if((!allowed.has(path.extname(filename))&&!legalNotice)||path.basename(filename).startsWith('.'))throw new Error(`Arquivo não autorizado em public/: ${path.relative(publicRoot,filename)}`);
+  const relativeName=path.relative(publicRoot,filename).split(path.sep).join('/');
+  const legalNotice=['modelo/THIRD-PARTY-LICENSE.txt','modelo/assets/HUMAN-LICENSE.txt'].includes(relativeName);
+  const approvedPerson=relativeName==='modelo/assets/pessoa-reclinada.glb';
+  if((!allowed.has(path.extname(filename))&&!legalNotice&&!approvedPerson)||path.basename(filename).startsWith('.'))throw new Error(`Arquivo não autorizado em public/: ${relativeName}`);
+  if(approvedPerson){
+    const data=await readFile(filename);
+    if(data.toString('ascii',0,4)!=='glTF'||data.readUInt32LE(4)!==2||data.readUInt32LE(8)!==data.length)throw new Error('Modelo humano GLB inválido.');
+    const document=JSON.parse(data.subarray(20,20+data.readUInt32LE(12)).toString('utf8'));
+    if([...(document.buffers||[]),...(document.images||[])].some(asset=>asset.uri&&!asset.uri.startsWith('data:')))throw new Error('O modelo humano deve conter seus próprios recursos, sem URLs externas.');
+  }
   if(['.html','.js','.css'].includes(path.extname(filename))){
     const content=await readFile(filename,'utf8');
     if(/ApiceP1_modelo3d|fitcheck|parts3d\.json|lista_de_corte|__DATA__|01_documentos\/|02_corte\/|04_desenhos\//i.test(content))throw new Error(`Referência ao acervo técnico em ${filename}`);
@@ -38,7 +46,7 @@ for(const filename of files){
     }
   }
 }
-for(const name of ['public/app.js','src/modelo.js','build-modelo.mjs']){
+for(const name of ['public/app.js','src/modelo.js','src/produto.js','src/pessoa.js','src/ambiente.js','build-modelo.mjs']){
   const result=spawnSync(process.execPath,['--check',path.join(root,name)],{encoding:'utf8'});
   if(result.status!==0)throw new Error(result.stderr);
 }
