@@ -124,18 +124,21 @@ for (let i = 0; i < 4; i++) {
   lineBetween([-1.72, .085, 1.72], [1.72, .085, 1.72], .012, palette.cyan, border);
 }
 
-function faceTexture(black) {
+function faceTexture(black, emission = false) {
+  const overlay = emission === 'overlay';
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 1024;
   const c = canvas.getContext('2d');
-  c.fillStyle = black ? '#25282b' : '#e6ddc8';
-  c.fillRect(0, 0, 1024, 1024);
+  c.fillStyle = emission ? '#000000' : black ? '#25282b' : '#e6ddc8';
+  if (!overlay) c.fillRect(0, 0, 1024, 1024);
   const wash = c.createLinearGradient(0, 0, 1024, 1024);
   wash.addColorStop(0, black ? '#ffffff04' : '#ffffff0c');
   wash.addColorStop(1, '#00000009');
-  c.fillStyle = wash; c.fillRect(0, 0, 1024, 1024);
-  c.strokeStyle = black ? '#adb9ba38' : '#6b6a5442';
-  c.lineWidth = 1.35;
+  if (!emission) { c.fillStyle = wash; c.fillRect(0, 0, 1024, 1024); }
+  c.strokeStyle = overlay ? '#00cfff' : emission ? '#ffffff' : black ? '#adb9ba38' : '#009dcd';
+  c.shadowColor = emission && !overlay ? '#ffffff' : '#00ddff';
+  c.shadowBlur = black ? 0 : overlay ? 10 : emission ? 3 : 9;
+  c.lineWidth = black ? 1.35 : 4.3;
   const cx = 512, cy = 570;
   for (const r of [84, 104, 129]) {
     c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke();
@@ -146,7 +149,7 @@ function faceTexture(black) {
     const a = i * Math.PI / 3 + .25;
     c.beginPath(); c.arc(cx + Math.cos(a) * 129, cy + Math.sin(a) * 129, 3, 0, Math.PI * 2); c.stroke();
   }
-  c.lineWidth = 1;
+  c.lineWidth = black ? 1 : 3.4;
   for (const y of [825, 911]) { c.beginPath(); c.moveTo(125, y); c.lineTo(899, y); c.stroke(); }
   for (let i = 0; i < 9; i++) {
     const x = 224 + i * 72;
@@ -158,9 +161,22 @@ function faceTexture(black) {
   texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   return texture;
 }
-const textures = { ivory: faceTexture(false), black: faceTexture(true) };
+const textures = {
+  ivory: { map: faceTexture(false), glow: faceTexture(false, true) },
+  black: { map: faceTexture(true), glow: null },
+};
 palette.shell.color.set('#ffffff');
-palette.shell.map = textures.ivory;
+palette.shell.map = textures.ivory.map;
+palette.shell.emissive.set('#00dfff');
+palette.shell.emissiveMap = textures.ivory.glow;
+palette.shell.emissiveIntensity = .45;
+// A luminous coating keeps the cyan markings crisp under strong studio light.
+const symbolMaterial = new THREE.MeshBasicMaterial({
+  map: faceTexture(false, 'overlay'), transparent: true, depthWrite: false,
+  side: THREE.DoubleSide, toneMapped: false, polygonOffset: true,
+  polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+});
+const symbolOverlays = [];
 
 const doors = [];
 const HINGE_Y = 1.66;
@@ -178,6 +194,10 @@ function createFace(rotation, canOpen) {
   geometry.setIndex([0, 1, 2, 0, 2, 3]);
   geometry.computeVertexNormals();
   mesh(geometry, palette.shell, pivot);
+  const symbols = mesh(geometry, symbolMaterial, pivot);
+  symbols.castShadow = symbols.receiveShadow = false;
+  symbols.renderOrder = 2;
+  symbolOverlays.push(symbols);
   const corners = [[-1.7,-1.55,1.27],[1.7,-1.55,1.27],[.43,0,0],[-.43,0,0]];
   for(let i=0;i<4;i++) lineBetween(corners[i], corners[(i+1)%4], .016, palette.edge, pivot);
   // Decorative light lines follow the exterior, without revealing construction.
@@ -274,7 +294,10 @@ resetView();
 document.querySelectorAll('[data-finish]').forEach(button => button.addEventListener('click', () => {
   const finish = button.dataset.finish;
   document.querySelectorAll('[data-finish]').forEach(b => b.setAttribute('aria-pressed',String(b===button)));
-  palette.shell.map = textures[finish];
+  palette.shell.map = textures[finish].map;
+  palette.shell.emissiveMap = textures[finish].glow;
+  palette.shell.emissiveIntensity = finish === 'ivory' ? .45 : 0;
+  symbolOverlays.forEach(symbols => { symbols.visible = finish === 'ivory'; });
   palette.shell.needsUpdate = true;
   const ivory = finish === 'ivory';
   palette.edge.color.set(ivory ? '#d8d1bd' : '#555d61');
